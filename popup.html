@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ScreenSearch</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="css/popup.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- KaTeX for LaTeX rendering -->
+  <link rel="stylesheet" href="lib/katex/katex.min.css">
+  <script src="lib/katex/katex.min.js"></script>
+  <script src="lib/katex/auto-render.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>ScreenSearch</h1>
+    <div class="developer-credit" style="padding: 2rem 1rem 2rem; margin: 1.5rem 0;">
+      <span style="padding: 0.75rem 1.25rem; margin-top: 0.5rem;">developed by <strong>zarzet</strong></span>
+    </div>
+    
+    <div class="buttons">
+      <button id="captureBtn" class="btn primary"><i class="material-icons">photo_camera</i> Capture</button>
+      <button id="captureFullBtn" class="btn"><i class="material-icons">crop_free</i> Full Page</button>
+      <button id="viewHistoryBtnMain" class="btn"><i class="material-icons">history</i> History</button>
+      <button id="settingsBtn" class="btn settings-btn"><i class="material-icons">settings</i> Settings</button>
+      <button id="githubBtn" class="btn github-btn"><i class="material-icons">code</i> GitHub</button>
+    </div>
+
+    <div id="screenshotContainer" class="hidden">
+      <div class="preview-area">
+        <div class="canvas-container">
+          <canvas id="cropCanvas" class="hidden"></canvas>
+          <img id="screenshotPreview" alt="Screenshot preview">
+        </div>
+        
+        <div class="crop-controls hidden" id="cropControls">
+          <div class="zoom-controls">
+            <button id="zoomInBtn" class="btn small"><i class="material-icons">add</i></button>
+            <span id="zoomLevel">100%</span>
+            <button id="zoomOutBtn" class="btn small"><i class="material-icons">remove</i></button>
+          </div>
+          <button id="finishCropBtn" class="btn small"><i class="material-icons">check</i> Done</button>
+          <button id="cancelCropBtn" class="btn small"><i class="material-icons">close</i> Cancel</button>
+        </div>
+      </div>
+      
+      <div class="tools">
+        <button id="cropBtn" class="btn"><i class="material-icons">crop</i> Crop</button>
+        <button id="resetBtn" class="btn"><i class="material-icons">refresh</i> Reset</button>
+        <button id="analyzeBtn" class="btn primary"><i class="material-icons">psychology</i> Analyze</button>
+      </div>
+      
+      <div id="cropHistory" class="hidden">
+        <h3>Crop History</h3>
+        <div id="cropThumbnails" class="thumbnails"></div>
+      </div>
+    </div>
+
+    <!-- Settings Container -->
+    <div id="settingsContainer" class="hidden">
+      <div class="settings-header">
+        <h2><i class="material-icons">settings</i> Settings</h2>
+        <button id="backFromSettingsBtn" class="btn small"><i class="material-icons">arrow_back</i> Back</button>
+      </div>
+      
+      <div class="settings-content">
+        <div class="setting-group">
+          <label for="apiKeyInput" class="setting-label">
+            <i class="material-icons">vpn_key</i>
+            <span>Gemini API Key</span>
+          </label>
+          <div class="api-key-section">
+            <input type="password" id="apiKeyInput" class="setting-input" placeholder="Enter your Gemini API key...">
+            <button id="toggleApiKeyBtn" class="btn small toggle-btn"><i class="material-icons">visibility</i></button>
+          </div>
+          <p class="setting-description">
+            Get your free API key from <a href="https://ai.google.dev/" target="_blank">Google AI Studio</a>
+          </p>
+          <div class="api-key-status">
+            <span id="apiKeyStatus" class="status-text"></span>
+          </div>
+        </div>
+        
+        <div class="settings-actions">
+          <button id="saveSettingsBtn" class="btn primary"><i class="material-icons">save</i> Save Settings</button>
+          <button id="testApiKeyBtn" class="btn secondary"><i class="material-icons">check_circle</i> Test API Key</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main session list for previous chats (initial UI) -->
+    <div id="sessionListContainerMain" class="hidden">
+      <button id="backFromHistoryMainBtn" class="btn small"><i class="material-icons">arrow_back</i> Back</button>
+      <h3>Previous Chats</h3>
+      <div id="sessionListMain" class="thumbnails"></div>
+    </div>
+
+    <div id="resultContainer" class="hidden">
+      <div class="chat-header">
+        <h2>Chat with AI</h2>
+        <button id="newSearchBtn" class="btn small"><i class="material-icons">arrow_back</i> Back</button>
+        <button id="viewHistoryBtn" class="btn small"><i class="material-icons">history</i> History</button>
+      </div> <!-- end chat-header -->
+      
+      <!-- Session list for previous chats -->
+      <div id="sessionListContainer" class="hidden">
+        <button id="backFromHistoryBtn" class="btn small"><i class="material-icons">arrow_back</i> Back</button>
+        <h3>Previous Chats</h3>
+        <div id="sessionList"></div>
+      </div>
+      
+      <div id="chatContainer" class="chat-container">
+        <div id="messagesContainer" class="messages-container"></div>
+        
+        <div id="loadingIndicator" class="loading-indicator hidden">
+          <div class="animated-dots">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+          <span class="loading-text">Thinking...</span>
+        </div>
+        
+        <div class="chat-input-area">
+          <textarea id="chatInput" placeholder="Ask a question about the image..." rows="2"></textarea>
+          <button id="sendBtn" class="btn primary round"><i class="material-icons">send</i></button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Copyright Footer -->
+    <div class="copyright-footer">
+      <span>&copy; zarz inc 2025</span>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/popup.js"></script>
+</body>
+</html>

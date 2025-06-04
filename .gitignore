@@ -1,0 +1,61 @@
+# Environment variables and API keys
+.env
+.env.local
+.env.development
+.env.production
+config.local.js
+api-keys.txt
+
+# Chrome Extension Development
+*.pem
+*.crx
+key.pem
+
+# Node.js dependencies (if used for build process)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Operating System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Build artifacts
+dist/
+build/
+*.zip
+
+# Backup files
+*.bak
+*.backup
+
+# Personal notes and todos
+TODO.md
+NOTES.md
+personal-notes.txt
+
+# Test coverage
+coverage/
+
+# Miscellaneous
+*.pid
+*.seed
+*.pid.lock 
