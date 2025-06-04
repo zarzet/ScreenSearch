@@ -1428,6 +1428,42 @@ h1::after {
   border-color: rgba(255, 255, 255, 0.6);
 }
 
+/* Session Title and Date Styles */
+.session-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, 
+    var(--primary-700) 0%, 
+    var(--accent-purple) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.session-date {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  opacity: 0.8;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.session-date::before {
+  content: '🕒';
+  font-size: 0.875rem;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
 .session-content {
   padding: var(--space-5);
   cursor: pointer;
@@ -2059,6 +2095,20 @@ h1::after {
   
   .setting-description a:hover {
     color: #a855f7;
+  }
+
+  /* Session Title and Date - Dark Mode */
+  .session-title {
+    background: linear-gradient(135deg, 
+      var(--primary-400) 0%, 
+      var(--accent-purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .session-date {
+    color: var(--neutral-400);
   }
 }
 

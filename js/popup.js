@@ -73,14 +73,25 @@ document.addEventListener('DOMContentLoaded', async function() {
     getStoredSessions().forEach((session, idx) => {
       const item = document.createElement('div');
       item.className = 'session-item';
-      item.textContent = new Date(session.timestamp).toLocaleString();
+      
+      // Create title and date elements
+      const titleElement = document.createElement('div');
+      titleElement.className = 'session-title';
+      titleElement.textContent = session.title || 'Untitled Chat';
+      
+      const dateElement = document.createElement('div');
+      dateElement.className = 'session-date';
+      dateElement.textContent = new Date(session.timestamp).toLocaleString();
+      
+      item.appendChild(titleElement);
+      item.appendChild(dateElement);
       item.addEventListener('click', () => loadSessionFromMain(idx));
       sessionListMain.appendChild(item);
     });
   }
 
-  function showMainSessionList() {
-    if (!suppressSave) saveCurrentSession();
+  async function showMainSessionList() {
+    if (!suppressSave) await saveCurrentSession();
     suppressSave = false;
     buttonsContainer.classList.add('hidden');
     screenshotContainer.classList.add('hidden');
@@ -240,7 +251,88 @@ document.addEventListener('DOMContentLoaded', async function() {
     return data ? JSON.parse(data) : [];
   }
 
-  function saveCurrentSession() {
+  // Generate AI title for session based on conversation history
+  async function generateSessionTitle(history) {
+    try {
+      const apiKey = config.getApiKey();
+      if (!apiKey || history.length === 0) {
+        return generateFallbackTitle(history);
+      }
+
+      // Create a summary of the conversation for title generation
+      const conversationSummary = history
+        .slice(0, 4) // Take first 4 messages for context
+        .map(msg => `${msg.role}: ${msg.content.substring(0, 200)}`) // Limit content length
+        .join('\n');
+
+      const titlePrompt = `Based on this conversation, generate a short, descriptive title (maximum 50 characters). Focus on the main topic or question being discussed. Return only the title, no quotes or explanations.
+
+Conversation:
+${conversationSummary}
+
+Title:`;
+
+      const requestBody = JSON.stringify({
+        contents: [{
+          role: "user",
+          parts: [{ text: titlePrompt }]
+        }],
+        generationConfig: {
+          temperature: 0.3,
+          topK: 16,
+          topP: 0.8,
+          maxOutputTokens: 50
+        }
+      });
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: requestBody
+      });
+
+      const data = await response.json();
+
+      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+        let title = data.candidates[0].content.parts[0].text.trim();
+        // Clean up the title - remove quotes and limit length
+        title = title.replace(/['"]/g, '').substring(0, 50);
+        return title || generateFallbackTitle(history);
+      }
+    } catch (error) {
+      console.log('Failed to generate AI title, using fallback:', error);
+    }
+    
+    return generateFallbackTitle(history);
+  }
+
+  // Generate fallback title when AI generation fails
+  function generateFallbackTitle(history) {
+    if (history.length === 0) return 'Empty Chat';
+    
+    // Extract key words from first user message
+    const firstUserMessage = history.find(msg => msg.role === 'user');
+    if (firstUserMessage) {
+      let content = firstUserMessage.content.replace(/[^\w\s]/g, '').toLowerCase();
+      
+      // Remove common words
+      const commonWords = ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'this', 'that', 'these', 'those', 'analyze', 'image', 'screenshot', 'picture'];
+      const words = content.split(' ')
+        .filter(word => word.length > 2 && !commonWords.includes(word))
+        .slice(0, 3); // Take first 3 meaningful words
+      
+      if (words.length > 0) {
+        return words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+      }
+    }
+    
+    // Final fallback based on timestamp
+    return `Chat ${new Date().toLocaleDateString()}`;
+  }
+
+  async function saveCurrentSession() {
     if (!conversationHistory.length) return;
     const sessions = getStoredSessions();
     const currentStr = JSON.stringify(conversationHistory);
@@ -248,7 +340,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (sessions.length > 0 && JSON.stringify(sessions[0].history) === currentStr) {
         return;
     }
-    sessions.unshift({ timestamp: Date.now(), history: conversationHistory });
+    
+    // Generate AI title for this session
+    const title = await generateSessionTitle(conversationHistory);
+    
+    sessions.unshift({ 
+      timestamp: Date.now(), 
+      history: conversationHistory,
+      title: title
+    });
     localStorage.setItem('chatSessions', JSON.stringify(sessions.slice(0, 10)));
   }
 
@@ -257,14 +357,25 @@ document.addEventListener('DOMContentLoaded', async function() {
     getStoredSessions().forEach((session, idx) => {
       const item = document.createElement('div');
       item.className = 'session-item';
-      item.textContent = new Date(session.timestamp).toLocaleString();
+      
+      // Create title and date elements
+      const titleElement = document.createElement('div');
+      titleElement.className = 'session-title';
+      titleElement.textContent = session.title || 'Untitled Chat';
+      
+      const dateElement = document.createElement('div');
+      dateElement.className = 'session-date';
+      dateElement.textContent = new Date(session.timestamp).toLocaleString();
+      
+      item.appendChild(titleElement);
+      item.appendChild(dateElement);
       item.addEventListener('click', () => loadSession(idx));
       sessionList.appendChild(item);
     });
   }
 
-  function showSessionList() {
-    if (!suppressSave) saveCurrentSession();
+  async function showSessionList() {
+    if (!suppressSave) await saveCurrentSession();
     suppressSave = false;
     chatContainer.classList.add('hidden');
     sessionListContainer.classList.remove('hidden');
