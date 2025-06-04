@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ScreenSearch",
-  "version": "1.0",
+  "version": "1.1.0",
   "description": "Screenshot Chrome tabs, crop images, and get AI answers about the content",
   "permissions": [
     "activeTab",
