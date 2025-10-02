@@ -257,14 +257,14 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   // Generate AI title for session based on conversation history
   async function generateSessionTitle(history) {
-    console.log('🤖 Generating title for session with', history.length, 'messages');
+    console.log('Generating title for session with', history.length, 'messages');
     
     try {
       const apiKey = config.getApiKey();
-      console.log('🔑 API key available:', !!apiKey);
+      console.log('API key available:', !!apiKey);
       
       if (!apiKey || history.length === 0) {
-        console.log('⚠️ Using fallback title - no API key or empty history');
+        console.log('Using fallback title - no API key or empty history');
         return generateFallbackTitle(history);
       }
 
@@ -274,7 +274,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         .map(msg => `${msg.role}: ${msg.content.substring(0, 200)}`) // Limit content length
         .join('\n');
 
-      console.log('📝 Conversation summary for title:', conversationSummary.substring(0, 100) + '...');
+      console.log('Conversation summary for title:', conversationSummary.substring(0, 100) + '...');
 
       const titlePrompt = `Based on this conversation, generate a short, descriptive title (maximum 50 characters). Focus on the main topic or question being discussed. Return only the title, no quotes or explanations.
 
@@ -296,7 +296,7 @@ Title:`;
         }
       });
 
-      console.log('🚀 Sending title generation request to AI...');
+      console.log('Sending title generation request to AI...');
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: {
@@ -306,20 +306,20 @@ Title:`;
       });
 
       const data = await response.json();
-      console.log('📥 AI response for title:', data);
+      console.log('AI response for title:', data);
 
       if (data.candidates && data.candidates[0] && data.candidates[0].content) {
         let title = data.candidates[0].content.parts[0].text.trim();
         // Clean up the title - remove quotes and limit length
         title = title.replace(/['"]/g, '').substring(0, 50);
-        console.log('✅ Generated title:', title);
+        console.log('Generated title:', title);
         return title || generateFallbackTitle(history);
       } else {
-        console.log('❌ Invalid AI response, using fallback');
+        console.log('Invalid AI response, using fallback');
         return generateFallbackTitle(history);
       }
     } catch (error) {
-      console.log('❌ Failed to generate AI title, using fallback:', error);
+      console.log('Failed to generate AI title, using fallback:', error);
     }
     
     return generateFallbackTitle(history);
@@ -327,17 +327,17 @@ Title:`;
 
   // Generate fallback title when AI generation fails
   function generateFallbackTitle(history) {
-    console.log('🔄 Generating fallback title for', history.length, 'messages');
+    console.log('Generating fallback title for', history.length, 'messages');
     
     if (history.length === 0) {
-      console.log('📝 Empty chat - using default title');
+      console.log('Empty chat - using default title');
       return 'Empty Chat';
     }
     
     // Extract key words from first user message
     const firstUserMessage = history.find(msg => msg.role === 'user');
     if (firstUserMessage) {
-      console.log('🔍 First user message:', firstUserMessage.content.substring(0, 50) + '...');
+      console.log('First user message:', firstUserMessage.content.substring(0, 50) + '...');
       let content = firstUserMessage.content.replace(/[^\w\s]/g, '').toLowerCase();
       
       // Remove common words
@@ -346,26 +346,26 @@ Title:`;
         .filter(word => word.length > 2 && !commonWords.includes(word))
         .slice(0, 3); // Take first 3 meaningful words
       
-      console.log('🏷️ Extracted keywords:', words);
+      console.log('Extracted keywords:', words);
       
       if (words.length > 0) {
         const title = words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-        console.log('✅ Fallback title from keywords:', title);
+        console.log('Fallback title from keywords:', title);
         return title;
       }
     }
     
     // Final fallback based on timestamp
     const title = `Chat ${new Date().toLocaleDateString()}`;
-    console.log('📅 Using date-based fallback title:', title);
+    console.log('Using date-based fallback title:', title);
     return title;
   }
 
   async function saveCurrentSession() {
-    console.log('💾 Saving current session with', conversationHistory.length, 'messages');
+    console.log('Saving current session with', conversationHistory.length, 'messages');
     
     if (!conversationHistory.length) {
-      console.log('⚠️ No conversation history to save');
+      console.log('No conversation history to save');
       return;
     }
     
@@ -374,14 +374,14 @@ Title:`;
     
     // Avoid saving duplicate of latest session
     if (sessions.length > 0 && JSON.stringify(sessions[0].history) === currentStr) {
-      console.log('⚠️ Skipping save - duplicate session detected');
+      console.log('Skipping save - duplicate session detected');
       return;
     }
     
-    console.log('🎯 Generating title for new session...');
+    console.log('Generating title for new session...');
     // Generate AI title for this session
     const title = await generateSessionTitle(conversationHistory);
-    console.log('📋 Final title for session:', title);
+    console.log('Final title for session:', title);
     
     const newSession = { 
       timestamp: Date.now(), 
@@ -391,7 +391,7 @@ Title:`;
     
     sessions.unshift(newSession);
     localStorage.setItem('chatSessions', JSON.stringify(sessions.slice(0, 10)));
-    console.log('✅ Session saved successfully with title:', title);
+    console.log('Session saved successfully with title:', title);
   }
 
   // Update old sessions with titles retroactively
@@ -402,7 +402,7 @@ Title:`;
     for (let i = 0; i < sessions.length; i++) {
       const session = sessions[i];
       if (!session.title && session.history && session.history.length > 0) {
-        console.log(`🔄 Updating legacy session ${i + 1} with AI title...`);
+        console.log(`Updating legacy session ${i + 1} with AI title...`);
         session.title = await generateSessionTitle(session.history);
         hasUpdates = true;
       }
@@ -410,7 +410,7 @@ Title:`;
     
     if (hasUpdates) {
       localStorage.setItem('chatSessions', JSON.stringify(sessions));
-      console.log('✅ Updated legacy sessions with titles');
+      console.log('Updated legacy sessions with titles');
     }
   }
 
