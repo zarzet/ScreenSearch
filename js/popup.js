@@ -501,7 +501,7 @@ Title:`;
   let isLoadingSession = false;
   let currentImageBase64 = null;
   let isProcessing = false;
-  const modelName = "gemini-2.5-flash-preview-04-17"; // Added model name variable
+  const modelName = "gemini-2.5-flash"; // Added model name variable
   
   // System prompt for the AI
   const systemPrompt = `You are ZARZ AI Chat, an AI assistant specialized in solving questions and problems shown in images. Your primary role is to:
