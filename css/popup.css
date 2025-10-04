@@ -107,10 +107,9 @@ body {
   padding: var(--space-3);
   background: var(--primary-600);
   min-height: 100vh;
-  min-width: 100vw;
   color: var(--text-primary);
   line-height: 1.6;
-  overflow-x: auto;
+  overflow: hidden;
 }
 
 /* Glass Container */

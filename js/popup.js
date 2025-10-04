@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', async function() {
-  // UI Elements
   const captureBtn = document.getElementById('captureBtn');
   const captureFullBtn = document.getElementById('captureFullBtn');
   const screenshotContainer = document.getElementById('screenshotContainer');
@@ -21,12 +20,10 @@ document.addEventListener('DOMContentLoaded', async function() {
   const cropHistory = document.getElementById('cropHistory');
   const cropThumbnails = document.getElementById('cropThumbnails');
 
-  // Chat interface elements
   const chatInput = document.getElementById('chatInput');
   const sendBtn = document.getElementById('sendBtn');
   const messagesContainer = document.getElementById('messagesContainer');
 
-  // Session history feature
   const viewHistoryBtn = document.getElementById('viewHistoryBtn');
   const backFromHistoryBtn = document.getElementById('backFromHistoryBtn');
   const sessionListContainer = document.getElementById('sessionListContainer');
@@ -36,7 +33,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   viewHistoryBtn.addEventListener('click', showSessionList);
   backFromHistoryBtn.addEventListener('click', showChat);
 
-  // Main history UI elements
   const viewHistoryBtnMain = document.getElementById('viewHistoryBtnMain');
   const backFromHistoryMainBtn = document.getElementById('backFromHistoryMainBtn');
   const sessionListContainerMain = document.getElementById('sessionListContainerMain');
@@ -46,13 +42,11 @@ document.addEventListener('DOMContentLoaded', async function() {
   viewHistoryBtnMain.addEventListener('click', showMainSessionList);
   backFromHistoryMainBtn.addEventListener('click', showMainInitial);
 
-  // GitHub button click handler
   const githubBtn = document.getElementById('githubBtn');
   githubBtn.addEventListener('click', function() {
     chrome.tabs.create({ url: 'https://github.com/zarzet' });
   });
 
-  // Settings functionality
   const settingsBtn = document.getElementById('settingsBtn');
   const settingsContainer = document.getElementById('settingsContainer');
   const backFromSettingsBtn = document.getElementById('backFromSettingsBtn');
@@ -74,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       const item = document.createElement('div');
       item.className = 'session-item';
       
-      // Create title and date elements
+
       const titleElement = document.createElement('div');
       titleElement.className = 'session-title';
       titleElement.textContent = session.title || generateFallbackTitle(session.history || []);
@@ -98,7 +92,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     settingsContainer.classList.add('hidden');
     sessionListContainerMain.classList.remove('hidden');
     
-    // Update legacy sessions with titles in background
     updateLegacySessions().catch(console.error);
     
     renderSessionListMain();
@@ -109,7 +102,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     settingsContainer.classList.add('hidden');
     buttonsContainer.classList.remove('hidden');
     screenshotContainer.classList.remove('hidden');
-    // Show developer credit back in main menu
     const developerCredit = document.querySelector('.developer-credit');
     if (developerCredit) {
       developerCredit.style.display = '';
@@ -120,12 +112,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     buttonsContainer.classList.add('hidden');
     screenshotContainer.classList.add('hidden');
     settingsContainer.classList.remove('hidden');
-    // Hide developer credit in settings
     const developerCredit = document.querySelector('.developer-credit');
     if (developerCredit) {
       developerCredit.style.display = 'none';
     }
-    // Load current API key
     loadCurrentApiKey();
   }
 
@@ -143,7 +133,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     try {
       const currentKey = config.getApiKey();
       if (currentKey) {
-        // Show masked version of the key
         const maskedKey = currentKey.substring(0, 8) + '•'.repeat(Math.max(currentKey.length - 8, 8));
         apiKeyInput.value = maskedKey;
         updateApiKeyStatus('API key is set', 'success');
@@ -165,23 +154,19 @@ document.addEventListener('DOMContentLoaded', async function() {
       return;
     }
 
-    // Skip saving if it's the masked version
     if (newApiKey.includes('•')) {
       updateApiKeyStatus('API key is already saved', 'success');
       return;
     }
 
-    // Basic validation for Gemini API key format
     if (!newApiKey.startsWith('AIzaSy') || newApiKey.length < 30) {
       updateApiKeyStatus('Invalid API key format. Should start with "AIzaSy"', 'error');
       return;
     }
 
     try {
-      // Save to storage
       await config.saveApiKey(newApiKey);
       
-      // Mask the displayed key
       const maskedKey = newApiKey.substring(0, 8) + '•'.repeat(Math.max(newApiKey.length - 8, 8));
       apiKeyInput.value = maskedKey;
       
@@ -204,7 +189,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     testApiKeyBtn.disabled = true;
 
     try {
-      // Test with a simple request
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key=${currentApiKey}`, {
         method: 'POST',
         headers: {
@@ -240,13 +224,10 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
 
   function loadSessionFromMain(index) {
-    // Transition from main history list to chat view
     buttonsContainer.classList.add('hidden');
     screenshotContainer.classList.add('hidden');
     resultContainer.classList.remove('hidden');
-    // Load the saved session into the chat container
     loadSession(index);
-    // Hide the main session list
     sessionListContainerMain.classList.add('hidden');
   }
 
@@ -255,7 +236,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     return data ? JSON.parse(data) : [];
   }
 
-  // Generate AI title for session based on conversation history
   async function generateSessionTitle(history) {
     console.log('Generating title for session with', history.length, 'messages');
     
@@ -268,10 +248,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         return generateFallbackTitle(history);
       }
 
-      // Create a summary of the conversation for title generation
       const conversationSummary = history
-        .slice(0, 4) // Take first 4 messages for context
-        .map(msg => `${msg.role}: ${msg.content.substring(0, 200)}`) // Limit content length
+        .slice(0, 4)
+        .map(msg => `${msg.role}: ${msg.content.substring(0, 200)}`)
         .join('\n');
 
       console.log('Conversation summary for title:', conversationSummary.substring(0, 100) + '...');
@@ -310,7 +289,6 @@ Title:`;
 
       if (data.candidates && data.candidates[0] && data.candidates[0].content) {
         let title = data.candidates[0].content.parts[0].text.trim();
-        // Clean up the title - remove quotes and limit length
         title = title.replace(/['"]/g, '').substring(0, 50);
         console.log('Generated title:', title);
         return title || generateFallbackTitle(history);
@@ -325,7 +303,6 @@ Title:`;
     return generateFallbackTitle(history);
   }
 
-  // Generate fallback title when AI generation fails
   function generateFallbackTitle(history) {
     console.log('Generating fallback title for', history.length, 'messages');
     
@@ -334,17 +311,15 @@ Title:`;
       return 'Empty Chat';
     }
     
-    // Extract key words from first user message
     const firstUserMessage = history.find(msg => msg.role === 'user');
     if (firstUserMessage) {
       console.log('First user message:', firstUserMessage.content.substring(0, 50) + '...');
       let content = firstUserMessage.content.replace(/[^\w\s]/g, '').toLowerCase();
       
-      // Remove common words
       const commonWords = ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'this', 'that', 'these', 'those', 'analyze', 'image', 'screenshot', 'picture'];
       const words = content.split(' ')
         .filter(word => word.length > 2 && !commonWords.includes(word))
-        .slice(0, 3); // Take first 3 meaningful words
+        .slice(0, 3);
       
       console.log('Extracted keywords:', words);
       
@@ -355,7 +330,6 @@ Title:`;
       }
     }
     
-    // Final fallback based on timestamp
     const title = `Chat ${new Date().toLocaleDateString()}`;
     console.log('Using date-based fallback title:', title);
     return title;
@@ -372,14 +346,12 @@ Title:`;
     const sessions = getStoredSessions();
     const currentStr = JSON.stringify(conversationHistory);
     
-    // Avoid saving duplicate of latest session
     if (sessions.length > 0 && JSON.stringify(sessions[0].history) === currentStr) {
       console.log('Skipping save - duplicate session detected');
       return;
     }
     
     console.log('Generating title for new session...');
-    // Generate AI title for this session
     const title = await generateSessionTitle(conversationHistory);
     console.log('Final title for session:', title);
     
@@ -394,7 +366,6 @@ Title:`;
     console.log('Session saved successfully with title:', title);
   }
 
-  // Update old sessions with titles retroactively
   async function updateLegacySessions() {
     const sessions = getStoredSessions();
     let hasUpdates = false;
@@ -420,7 +391,7 @@ Title:`;
       const item = document.createElement('div');
       item.className = 'session-item';
       
-      // Create title and date elements
+
       const titleElement = document.createElement('div');
       titleElement.className = 'session-title';
       titleElement.textContent = session.title || generateFallbackTitle(session.history || []);
@@ -442,7 +413,6 @@ Title:`;
     chatContainer.classList.add('hidden');
     sessionListContainer.classList.remove('hidden');
     
-    // Update legacy sessions with titles in background
     updateLegacySessions().catch(console.error);
     
     renderSessionList();
@@ -451,7 +421,6 @@ Title:`;
   function showChat() {
     sessionListContainer.classList.add('hidden');
     chatContainer.classList.remove('hidden');
-    // Hide developer credit in chat mode
     const developerCredit = document.querySelector('.developer-credit');
     if (developerCredit) {
       developerCredit.style.display = 'none';
@@ -463,7 +432,6 @@ Title:`;
     const sessions = getStoredSessions();
     const session = sessions[index];
     if (!session) return;
-    // Load conversation without duplicating history entries
     conversationHistory = session.history.slice();
     messagesContainer.innerHTML = '';
     isLoadingSession = true;
@@ -474,7 +442,6 @@ Title:`;
     showChat();
   }
 
-  // Variables to store screenshot data
   let screenshotDataUrl = null;
   let originalScreenshotDataUrl = null;
   let isCropping = false;
@@ -495,15 +462,13 @@ Title:`;
     totalScrollsNeeded: 0
   };
 
-  // Variables for chat
   let conversationHistory = [];
   let suppressSave = false;
   let isLoadingSession = false;
   let currentImageBase64 = null;
   let isProcessing = false;
-  const modelName = "gemini-2.5-flash"; // Added model name variable
+  const modelName = "gemini-2.5-flash";
   
-  // System prompt for the AI
   const systemPrompt = `You are ZARZ AI Chat, an AI assistant specialized in solving questions and problems shown in images. Your primary role is to:
 
 **PRIORITY 1: QUESTION SOLVING**
@@ -535,48 +500,37 @@ Title:`;
 
 Remember: Your goal is to SOLVE and HELP, not just describe!`;
 
-  // API Key is now handled through config.js and Chrome storage
-  // No more hardcoded API keys!
-
-  // Adjustable grid cropping variables
   let isAdjustableGridActive = false;
   let gridStartX = 0;
   let gridStartY = 0;
   let gridEndX = 0;
   let gridEndY = 0;
   let isDraggingGrid = false;
-  let dragHandle = null; // Which handle is being dragged
+  let dragHandle = null;
   let dragOffsetX = 0;
   let dragOffsetY = 0;
-  const handleSize = 16; // Size of the resize handles
+  const handleSize = 16;
 
-  // Cursor position tracking
   let cursorX = 0;
   let cursorY = 0;
   let showCursorDot = false;
 
-  // Wait for config to be initialized
   await config.init();
   
-  // Initialize settings if API key is available
   if (config.getApiKey()) {
     console.log('API key loaded successfully');
   } else {
     console.log('No API key found. Please set it in Settings.');
   }
 
-  // Capture visible screenshot button
   captureBtn.addEventListener('click', captureVisibleScreenshot);
 
-  // Capture full page screenshot button
   captureFullBtn.addEventListener('click', captureFullPageScreenshot);
 
-  // Crop button
   cropBtn.addEventListener('click', function() {
     startCroppingMode();
   });
 
-  // Reset button
   resetBtn.addEventListener('click', function() {
     if (isCropping) {
       cancelCropping();
@@ -585,13 +539,10 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     }
   });
 
-  // Analyze with AI button
   analyzeBtn.addEventListener('click', analyzeImage);
 
-  // New search button
   newSearchBtn.addEventListener('click', resetUI);
 
-  // Zoom control buttons
   zoomInBtn.addEventListener('click', function() {
     changeZoom(0.1);
   });
@@ -600,16 +551,12 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     changeZoom(-0.1);
   });
 
-  // Finish crop button
   finishCropBtn.addEventListener('click', finishCropping);
 
-  // Cancel crop button
   cancelCropBtn.addEventListener('click', cancelCropping);
 
-  // Send button
   sendBtn.addEventListener('click', sendMessage);
 
-  // Chat input enter key handling
   chatInput.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -617,7 +564,6 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     }
   });
 
-  // Function to start cropping mode - completely redesigned for adjustable grid
   function startCroppingMode() {
     isCropping = true;
     currentZoom = 1.0;
@@ -627,7 +573,6 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     cropCanvas.classList.remove('hidden');
     cropControls.classList.remove('hidden');
     
-    // Initialize canvas for cropping
     const img = new Image();
     img.onload = function() {
       cropCanvas.width = img.width;
@@ -635,16 +580,13 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
       ctx = cropCanvas.getContext('2d');
       ctx.drawImage(img, 0, 0);
       
-      // Initialize adjustable grid to cover center 50% of the image
       gridStartX = Math.floor(cropCanvas.width * 0.25);
       gridStartY = Math.floor(cropCanvas.height * 0.25);
       gridEndX = Math.floor(cropCanvas.width * 0.75);
       gridEndY = Math.floor(cropCanvas.height * 0.75);
       
-      // Draw the initial grid
       drawAdjustableGrid();
       
-      // Add event listeners for adjustable grid
       cropCanvas.addEventListener('mousedown', startGridDrag);
       cropCanvas.addEventListener('mousemove', updateGridDrag);
       cropCanvas.addEventListener('mouseup', endGridDrag);
@@ -654,14 +596,12 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     img.src = screenshotDataUrl;
   }
 
-  // Function to cancel cropping mode
   function cancelCropping() {
     isCropping = false;
     cropCanvas.classList.add('hidden');
     cropControls.classList.add('hidden');
     screenshotPreview.classList.remove('hidden');
     
-    // Remove all crop event listeners
     cropCanvas.removeEventListener('mousedown', startGridDrag);
     cropCanvas.removeEventListener('mousemove', updateGridDrag);
     cropCanvas.removeEventListener('mouseup', endGridDrag);
@@ -669,16 +609,13 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     cropCanvas.removeEventListener('mousemove', updateCursor);
   }
 
-  // Function to finish cropping
   function finishCropping() {
     if (!isCropping) return;
     
-    // Get the cropped image data
     const croppedCanvas = document.createElement('canvas');
     const width = Math.abs(gridEndX - gridStartX);
     const height = Math.abs(gridEndY - gridStartY);
     
-    // If no selection was made or too small, cancel cropping
     if (width < 10 || height < 10) {
       cancelCropping();
       return;
@@ -700,25 +637,20 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
         0, 0, width, height
       );
       
-      // Add to stored crops
       const cropDataUrl = croppedCanvas.toDataURL('image/png');
       storedCrops.push(cropDataUrl);
       activeCropIndex = storedCrops.length - 1;
       
-      // Update the screenshot data
       screenshotDataUrl = cropDataUrl;
       screenshotPreview.src = cropDataUrl;
       
-      // Show crop history
       updateCropHistory();
       
-      // Exit crop mode
       isCropping = false;
       cropCanvas.classList.add('hidden');
       cropControls.classList.add('hidden');
       screenshotPreview.classList.remove('hidden');
       
-      // Remove all crop event listeners
       cropCanvas.removeEventListener('mousedown', startGridDrag);
       cropCanvas.removeEventListener('mousemove', updateGridDrag);
       cropCanvas.removeEventListener('mouseup', endGridDrag);
@@ -728,47 +660,33 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     img.src = originalScreenshotDataUrl;
   }
 
-  // Function to draw the adjustable grid
   function drawAdjustableGrid() {
     if (!isCropping || !ctx) return;
     
-    // Clear the entire canvas
     ctx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
     
-    // Load and draw the original image
     const img = new Image();
     img.onload = function() {
-      // Draw the original image
       ctx.drawImage(img, 0, 0, cropCanvas.width, cropCanvas.height);
       
-      // Get grid coordinates (accounting for possible negative width/height)
       const startX = Math.min(gridStartX, gridEndX);
       const startY = Math.min(gridStartY, gridEndY);
       const width = Math.abs(gridEndX - gridStartX);
       const height = Math.abs(gridEndY - gridStartY);
       
-      // Create a semi-transparent overlay for the areas outside selection
       ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
       
-      // Draw four rectangles around the selection
-      // Top rectangle
       ctx.fillRect(0, 0, cropCanvas.width, startY);
-      // Left rectangle
       ctx.fillRect(0, startY, startX, height);
-      // Right rectangle
       ctx.fillRect(startX + width, startY, cropCanvas.width - (startX + width), height);
-      // Bottom rectangle
       ctx.fillRect(0, startY + height, cropCanvas.width, cropCanvas.height - (startY + height));
       
-      // Draw border around selection
       ctx.strokeStyle = '#4285f4';
       ctx.lineWidth = 2;
       ctx.strokeRect(startX, startY, width, height);
       
-      // Draw resize handles at the corners and midpoints
       drawGridHandles(startX, startY, width, height);
       
-      // Draw dimensions label
       ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
       ctx.fillRect(startX + width - 80, startY - 25, 80, 20);
       ctx.fillStyle = '#000';
@@ -778,36 +696,29 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     img.src = originalScreenshotDataUrl;
   }
   
-  // Function to draw resize handles
   function drawGridHandles(x, y, width, height) {
     ctx.fillStyle = '#4285f4';
     
-    // Draw corner handles
-    drawHandle(x, y); // Top-left
-    drawHandle(x + width, y); // Top-right
-    drawHandle(x, y + height); // Bottom-left
-    drawHandle(x + width, y + height); // Bottom-right
+    drawHandle(x, y);
+    drawHandle(x + width, y);
+    drawHandle(x, y + height);
+    drawHandle(x + width, y + height);
     
-    // Draw middle handles
-    drawHandle(x + width/2, y); // Top-middle
-    drawHandle(x, y + height/2); // Left-middle
-    drawHandle(x + width, y + height/2); // Right-middle
-    drawHandle(x + width/2, y + height); // Bottom-middle
+    drawHandle(x + width/2, y);
+    drawHandle(x, y + height/2);
+    drawHandle(x + width, y + height/2);
+    drawHandle(x + width/2, y + height);
   }
   
-  // Function to draw a single handle
   function drawHandle(x, y) {
-    // Draw a larger blue square for easier interaction
     ctx.fillStyle = '#4285f4';
     ctx.fillRect(x - handleSize/2, y - handleSize/2, handleSize, handleSize);
     
-    // Add a white border to make the handle more visible
     ctx.strokeStyle = 'white';
     ctx.lineWidth = 2;
     ctx.strokeRect(x - handleSize/2, y - handleSize/2, handleSize, handleSize);
   }
   
-  // Function to check if a point is inside a handle
   function getHandleAtPosition(x, y) {
     const startX = Math.min(gridStartX, gridEndX);
     const startY = Math.min(gridStartY, gridEndY);
@@ -818,19 +729,16 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     const midX = startX + width/2;
     const midY = startY + height/2;
     
-    // Check corner handles
-    if (isPointInHandle(x, y, startX, startY)) return 'tl'; // Top-left
-    if (isPointInHandle(x, y, endX, startY)) return 'tr'; // Top-right
-    if (isPointInHandle(x, y, startX, endY)) return 'bl'; // Bottom-left
-    if (isPointInHandle(x, y, endX, endY)) return 'br'; // Bottom-right
+    if (isPointInHandle(x, y, startX, startY)) return 'tl';
+    if (isPointInHandle(x, y, endX, startY)) return 'tr';
+    if (isPointInHandle(x, y, startX, endY)) return 'bl';
+    if (isPointInHandle(x, y, endX, endY)) return 'br';
     
-    // Check middle handles
-    if (isPointInHandle(x, y, midX, startY)) return 'tm'; // Top-middle
-    if (isPointInHandle(x, y, startX, midY)) return 'ml'; // Middle-left
-    if (isPointInHandle(x, y, endX, midY)) return 'mr'; // Middle-right
-    if (isPointInHandle(x, y, midX, endY)) return 'bm'; // Bottom-middle
+    if (isPointInHandle(x, y, midX, startY)) return 'tm';
+    if (isPointInHandle(x, y, startX, midY)) return 'ml';
+    if (isPointInHandle(x, y, endX, midY)) return 'mr';
+    if (isPointInHandle(x, y, midX, endY)) return 'bm';
     
-    // Check if inside the selection rectangle (for moving)
     if (x > startX && x < endX && y > startY && y < endY) {
       return 'move';
     }
@@ -838,7 +746,6 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     return null;
   }
   
-  // Function to check if a point is inside a handle
   function isPointInHandle(x, y, handleX, handleY) {
     return (
       x >= handleX - handleSize/2 && 
@@ -848,21 +755,21 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     );
   }
   
-  // Function to start dragging the grid
+
   function startGridDrag(e) {
     const rect = cropCanvas.getBoundingClientRect();
     
-    // Use the same coordinate calculation as updateCursor
+
     const canvasScaleX = cropCanvas.width / rect.width;
     const canvasScaleY = cropCanvas.height / rect.height;
     
-    // Calculate actual position on canvas accounting for zoom and scaling
+
     const x = (e.clientX - rect.left) * canvasScaleX / currentZoom;
     const y = (e.clientY - rect.top) * canvasScaleY / currentZoom;
     
     
     
-    // Check if we're interacting with a handle or the selection
+
     dragHandle = getHandleAtPosition(x, y);
     
     
@@ -871,74 +778,74 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
       dragOffsetX = x;
       dragOffsetY = y;
       
-      // If we're moving the entire selection, calculate offset
+
       if (dragHandle === 'move') {
         dragOffsetX = x - Math.min(gridStartX, gridEndX);
         dragOffsetY = y - Math.min(gridStartY, gridEndY);
       }
       
-      // Prevent default browser behavior to avoid text selection
+
       e.preventDefault();
     }
   }
   
-  // Function to update grid while dragging
+
   function updateGridDrag(e) {
     if (!isDraggingGrid || !dragHandle) return;
     
     const rect = cropCanvas.getBoundingClientRect();
     
-    // Use the same coordinate calculation as updateCursor and startGridDrag
+
     const canvasScaleX = cropCanvas.width / rect.width;
     const canvasScaleY = cropCanvas.height / rect.height;
     
-    // Calculate actual position on canvas accounting for zoom and scaling
+
     const x = Math.max(0, Math.min(cropCanvas.width, (e.clientX - rect.left) * canvasScaleX / currentZoom));
     const y = Math.max(0, Math.min(cropCanvas.height, (e.clientY - rect.top) * canvasScaleY / currentZoom));
     
     
     
-    // Handle different drag operations
+
     switch (dragHandle) {
-      case 'tl': // Top-left
+      case 'tl':
         gridStartX = x;
         gridStartY = y;
         break;
-      case 'tr': // Top-right
+      case 'tr':
         gridEndX = x;
         gridStartY = y;
         break;
-      case 'bl': // Bottom-left
+      case 'bl':
         gridStartX = x;
         gridEndY = y;
         break;
-      case 'br': // Bottom-right
+      case 'br':
         gridEndX = x;
         gridEndY = y;
         break;
-      case 'tm': // Top-middle
+      case 'tm':
         gridStartY = y;
         break;
-      case 'ml': // Middle-left
+      case 'ml':
         gridStartX = x;
         break;
-      case 'mr': // Middle-right
+      case 'mr':
         gridEndX = x;
         break;
-      case 'bm': // Bottom-middle
+      case 'bm':
         gridEndY = y;
         break;
-      case 'move': // Move entire selection
+      case 'move':
         const width = Math.abs(gridEndX - gridStartX);
         const height = Math.abs(gridEndY - gridStartY);
         const isEndXLarger = gridEndX > gridStartX;
         const isEndYLarger = gridEndY > gridStartY;
         
-        // Calculate new position
+
         const newLeft = Math.max(0, Math.min(cropCanvas.width - width, x - dragOffsetX));
         const newTop = Math.max(0, Math.min(cropCanvas.height - height, y - dragOffsetY));
         
-        // Update positions
+
         gridStartX = newLeft;
         gridStartY = newTop;
         gridEndX = isEndXLarger ? newLeft + width : newLeft - width;
@@ -948,20 +855,20 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
         break;
     }
     
-    // Ensure grid stays within canvas boundaries
+
     gridStartX = Math.max(0, Math.min(cropCanvas.width, gridStartX));
     gridStartY = Math.max(0, Math.min(cropCanvas.height, gridStartY));
     gridEndX = Math.max(0, Math.min(cropCanvas.width, gridEndX));
     gridEndY = Math.max(0, Math.min(cropCanvas.height, gridEndY));
     
-    // Redraw the grid
+
     drawAdjustableGrid();
     
-    // Prevent default browser behavior to avoid text selection
+
     e.preventDefault();
   }
   
-  // Function to end dragging
+
   function endGridDrag(e) {
     if (isDraggingGrid) {
 
@@ -971,24 +878,24 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     }
   }
 
-  // Function to update cursor based on hovering over handles
+
   function updateCursor(e) {
     if (!isCropping) return;
     
     const rect = cropCanvas.getBoundingClientRect();
     
-    // More accurate cursor position calculation
-    // This accounts for canvas size, zoom level, and any CSS scaling/positioning
+
+
     const canvasScaleX = cropCanvas.width / rect.width;
     const canvasScaleY = cropCanvas.height / rect.height;
     
-    // Calculate actual position on canvas accounting for zoom and scaling
+
     const x = (e.clientX - rect.left) * canvasScaleX / currentZoom;
     const y = (e.clientY - rect.top) * canvasScaleY / currentZoom;
     
     const handle = getHandleAtPosition(x, y);
     
-    // Set appropriate cursor based on handle
+
     switch (handle) {
       case 'tl':
       case 'br':
@@ -1014,7 +921,7 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     }
   }
 
-  // Function to capture the visible part of the screen
+
   function captureVisibleScreenshot() {
     isCapturingFullPage = false;
     chrome.tabs.captureVisibleTab(null, { format: 'png' }, function(dataUrl) {
@@ -1027,16 +934,16 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     });
   }
 
-  // Function to capture a full page screenshot
+
   function captureFullPageScreenshot() {
     isCapturingFullPage = true;
     
-    // Get current tab ID
+
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       const activeTab = tabs[0];
       if (!activeTab) return;
       
-      // Execute script to get page dimensions
+
       chrome.scripting.executeScript({
         target: {tabId: activeTab.id},
         function: getPageDimensions
@@ -1049,7 +956,7 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
         const dimensions = results[0].result;
 
         
-        // Initialize full page data
+
         fullPageData.scrollHeight = dimensions.scrollHeight;
         fullPageData.scrollWidth = dimensions.scrollWidth;
         fullPageData.viewportHeight = dimensions.viewportHeight;
@@ -1057,16 +964,16 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
         fullPageData.currentScroll = 0;
         fullPageData.scrollsPerformed = 0;
         
-        // Calculate how many scrolls we need
+
         fullPageData.totalScrollsNeeded = Math.ceil(dimensions.scrollHeight / dimensions.viewportHeight);
         
-        // Create a canvas to hold the full page screenshot
+
         fullPageData.canvas = document.createElement('canvas');
         fullPageData.canvas.width = dimensions.scrollWidth;
         fullPageData.canvas.height = dimensions.scrollHeight;
         fullPageData.canvasContext = fullPageData.canvas.getContext('2d');
         
-        // Start the scrolling and capturing process
+
         captureBtn.parentElement.classList.add('hidden');
         screenshotContainer.classList.remove('hidden');
         captureScrolledScreenshot(activeTab.id, 0);
@@ -1074,7 +981,7 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     });
   }
 
-  // Function to be executed in the tab context to get page dimensions
+
   function getPageDimensions() {
     return {
       scrollHeight: Math.max(
@@ -1098,24 +1005,24 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     };
   }
 
-  // Function to scroll the page and capture screenshots
+
   function captureScrolledScreenshot(tabId, scrollPosition) {
-    // Scroll the page to the specific position
+
     chrome.scripting.executeScript({
       target: {tabId: tabId},
       function: (scrollPos) => { window.scrollTo(0, scrollPos); },
       args: [scrollPosition]
     }, function() {
-      // Wait a bit for the page to render after scrolling
+
       setTimeout(function() {
-        // Capture the visible part after scrolling
+
         chrome.tabs.captureVisibleTab(null, { format: 'png' }, function(dataUrl) {
           const img = new Image();
           img.onload = function() {
-            // Calculate the position where to draw this piece
+
             const yPosition = Math.min(scrollPosition, fullPageData.scrollHeight - fullPageData.viewportHeight);
             
-            // Draw this piece on the canvas
+
             fullPageData.canvasContext.drawImage(
               img, 
               0, 0, img.width, img.height,
@@ -1124,17 +1031,17 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
             
             fullPageData.scrollsPerformed++;
             
-            // If we need more scrolls, continue
+
             if (fullPageData.scrollsPerformed < fullPageData.totalScrollsNeeded) {
               const nextScrollPosition = scrollPosition + fullPageData.viewportHeight;
               captureScrolledScreenshot(tabId, nextScrollPosition);
             } else {
-              // We're done, convert the canvas to a data URL
+
               screenshotDataUrl = fullPageData.canvas.toDataURL('image/png');
               originalScreenshotDataUrl = screenshotDataUrl;
               screenshotPreview.src = screenshotDataUrl;
               
-              // Reset the scroll position
+
               chrome.scripting.executeScript({
                 target: {tabId: tabId},
                 function: () => { window.scrollTo(0, 0); }
@@ -1143,28 +1050,28 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
           };
           img.src = dataUrl;
         });
-      }, 150); // Delay to ensure page has rendered after scroll
+      }, 150);
     });
   }
 
-  // Change zoom level
+
   function changeZoom(delta) {
     currentZoom = Math.max(0.1, Math.min(3.0, currentZoom + delta));
     updateZoomDisplay();
     
-    // Apply zoom to canvas
+
     if (isCropping) {
       cropCanvas.style.transformOrigin = 'top left';
       cropCanvas.style.transform = `scale(${currentZoom})`;
     }
   }
 
-  // Update zoom level display
+
   function updateZoomDisplay() {
     zoomLevel.textContent = Math.round(currentZoom * 100) + '%';
   }
 
-  // Update crop history UI
+
   function updateCropHistory() {
     if (storedCrops.length > 0) {
       cropHistory.classList.remove('hidden');
@@ -1179,7 +1086,7 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
           screenshotDataUrl = storedCrops[index];
           screenshotPreview.src = screenshotDataUrl;
           
-          // Update active state
+
           document.querySelectorAll('.thumbnail').forEach(thumb => {
             thumb.classList.remove('active');
           });
@@ -1191,42 +1098,42 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     }
   }
 
-  // Function to analyze the image with AI - updated for chat interface
+
   function analyzeImage() {
-    // Show loading indicator and switch to chat interface
+
     loadingIndicator.classList.remove('hidden');
     screenshotContainer.classList.add('hidden');
     resultContainer.classList.remove('hidden');
     
-    // Reset conversation history
+
     conversationHistory = [];
     messagesContainer.innerHTML = '';
     
-    // Convert data URL to base64 for API request
+
     const base64data = screenshotDataUrl.split(',')[1];
     currentImageBase64 = base64data;
     
-    // Send initial message to AI to analyze the image
+
     sendToAI("Please analyze this image. If there are any questions, problems, or exercises visible, solve them step by step. If it's educational content, provide explanations and solutions.", true);
   }
 
-  // Function to send a message to the AI
+
   async function sendMessage() {
     if (isProcessing || !chatInput.value.trim()) return;
     
     const userMessage = chatInput.value.trim();
     chatInput.value = '';
     
-    // Add user message to the chat
+
     addMessageToChat(userMessage, 'user');
     
-    // Send to AI
+
     await sendToAI(userMessage);
   }
 
-  // Function to add a message to the chat
+
   function addMessageToChat(message, sender) {
-    // Force hide loading indicator when AI responds
+
     if (sender === 'ai') {
       loadingIndicator.classList.add('hidden');
 
@@ -1235,25 +1142,25 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     const messageElement = document.createElement('div');
     messageElement.className = `message ${sender}-message`;
 
-    // Format markdown: handle code fences first
+
     let formattedMessage = message;
     formattedMessage = formattedMessage.replace(/```(\w+)?\n([\s\S]*?)```/g,
       '<pre><code class="language-$1">$2</code></pre>');
 
-    // Convert bold text (**bold**) to HTML
+
     formattedMessage = formattedMessage.replace(/\*\*(.*?)\*\*/g,
       '<strong>$1</strong>');
 
-    // Convert URLs to links
+
     formattedMessage = formattedMessage.replace(/https?:\/\/[^\s]+/g, url => `<a href="${url}" target="_blank">${url}</a>`);
 
-    // Preserve line breaks
+
     formattedMessage = formattedMessage.replace(/\n/g, '<br>');
 
     messageElement.innerHTML = formattedMessage;
     messagesContainer.appendChild(messageElement);
 
-    // Render LaTeX if necessary
+
     if (message.includes('$')) {
       renderMathInElement(messageElement, {
         delimiters: [
@@ -1264,10 +1171,10 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
       });
     }
     
-    // Auto scroll to the bottom
+
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
     
-    // Add to conversation history (skip when loading session)
+
     if (!isLoadingSession) {
       conversationHistory.push({
         role: sender === 'user' ? 'user' : 'model',
@@ -1276,30 +1183,30 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     }
   }
 
-  // Function to send a message to the AI and get response
+
   async function sendToAI(message, isInitialAnalysis = false) {
     isProcessing = true;
     
-    // Show loading indicator
+
     loadingIndicator.classList.remove('hidden');
     
     try {
-      // Get API key from config
+
       const apiKey = config.getApiKey();
       if (!apiKey) {
         throw new Error('API key not found. Please set your Gemini API key in Settings.');
       }
       
-      // Prepare request content
+
       let requestContents = [];
       
-      // Format the conversation history
+
       const formattedHistory = conversationHistory.map(msg => ({
         role: msg.role,
         parts: [{ text: msg.content }]
       }));
       
-      // If this is the initial analysis or we need to include the image again
+
       if (isInitialAnalysis || formattedHistory.length <= 1) {
         requestContents = [
           {
@@ -1318,8 +1225,8 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
           }
         ];
       } else {
-        // For ongoing conversation, include conversation history but start with the image
-        // First message includes the system prompt inside the user message
+
+
         const initialMessage = {
           role: "user",
           parts: [
@@ -1335,10 +1242,10 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
           ]
         };
         
-        // Skip the initial instruction message in the history
+
         const relevantHistory = formattedHistory.slice(1);
         
-        // Add user's new message
+
         const userMessage = {
           role: "user",
           parts: [{ text: message }]
@@ -1347,7 +1254,7 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
         requestContents = [initialMessage, ...relevantHistory, userMessage];
       }
       
-      // Prepare request for Gemini API
+
       const requestBody = JSON.stringify({
         contents: requestContents,
         generationConfig: {
@@ -1358,7 +1265,7 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
         }
       });
       
-      // Make API request to Google AI Studio Gemini API
+
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: {
@@ -1369,7 +1276,7 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
       
       const data = await response.json();
       
-      // Process and display the response
+
       let aiResponse = '';
       
       if (data.candidates && data.candidates.length > 0 && 
@@ -1384,30 +1291,30 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
         aiResponse = 'Unable to analyze the image. Please try again.';
       }
       
-      // Hide loading indicator before adding response
+
       loadingIndicator.classList.add('hidden');
 
       
-      // Add AI response to chat
+
       addMessageToChat(aiResponse, 'ai');
       
     } catch (error) {
       console.error('Error communicating with AI:', error);
       
-      // Ensure loading indicator is hidden
+
       loadingIndicator.classList.add('hidden');
       
-      // Add error message to chat
+
       addMessageToChat(`Error: ${error.message}. Please try again.`, 'ai');
     } finally {
-      // Always ensure loading indicator is hidden and processing is false
+
       loadingIndicator.classList.add('hidden');
 
       isProcessing = false;
     }
   }
 
-  // Function to reset the UI
+
   function resetUI() {
     screenshotDataUrl = null;
     originalScreenshotDataUrl = null;
@@ -1416,16 +1323,16 @@ Remember: Your goal is to SOLVE and HELP, not just describe!`;
     storedCrops = [];
     activeCropIndex = -1;
     
-    // Reset canvas transform
+
     cropCanvas.style.transform = 'none';
     
-    // Show developer credit back in main menu
+
     const developerCredit = document.querySelector('.developer-credit');
     if (developerCredit) {
       developerCredit.style.display = '';
     }
     
-    // Reset UI elements
+
     captureBtn.parentElement.classList.remove('hidden');
     screenshotContainer.classList.add('hidden');
     resultContainer.classList.add('hidden');
